@@ -1,0 +1,13 @@
+WIDTH = 1000
+HEIGHT = 1000
+
+DEPTH = 4
+FPS = 30
+L_C = (WIDTH**2 + HEIGHT**2)**(1/2)
+
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
+
+SPEED = 5
+MAX_STAR = 500
+V_N = 5
