@@ -1,4 +1,5 @@
 import random
+from config import path_english_dict
 
 
 # Функция для чтения файла с переводами
@@ -30,14 +31,14 @@ def train(words, mode):
             total_questions += 1
             if mode == 1:  # Английское слово, варианты русского
                 random_entry = random.choice(words)
-                word = random.choice(random_entry[0])
+                word = random.choice(random_entry[0]).replace("[","").replace("]","")
                 correct_answer = random.choice(random_entry[1])
                 options = random.sample([w for _, trans in words for w in trans], 3) + [correct_answer]
                 random.shuffle(options)
                 print(f"Переведите: {word}")
             else:  # Русское слово, варианты английского
                 random_entry = random.choice(words)
-                word = random.choice(random_entry[1])
+                word = random.choice(random_entry[1]).replace("[","").replace("]","")
                 correct_answer = random.choice(random_entry[0])
                 options = random.sample([w for trans, _ in words for w in trans], 3) + [correct_answer]
                 random.shuffle(options)
@@ -59,8 +60,8 @@ def train(words, mode):
                 print("Некорректный ввод!")
 
             # Предложить завершить
-            cont = input("Хотите продолжить? (да/нет): ").strip().lower()
-            if cont != "да":
+            cont = input("Хотите продолжить? (y/n): ").strip().lower()
+            if cont != "y":
                 break
     finally:
         save_stats(total_questions, correct_answers)
@@ -68,8 +69,7 @@ def train(words, mode):
 
 # Основная функция
 def main():
-    words_file = input("Введите путь к файлу со словами (например, words.md): ").strip()
-    words = load_words(words_file)
+    words = load_words(path_english_dict)
 
     print("\nВыберите режим:")
     print("1. Перевод английского на русский")

@@ -1,5 +1,8 @@
 dublicate/
-config.env
+config.py
 .idea/
 res/images/
 res/videos/
+__pycache__/
+*.pyc
+stats.txt
