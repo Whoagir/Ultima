@@ -1,97 +1,156 @@
 import turtle
 import random
 
-xsize = 20
-ysize = 60
+# Константы
+SCREEN_WIDTH = 400
+SCREEN_HEIGHT = 600
+WALL_WIDTH = 20
+WALL_GAP = 150
+GRAVITY = -0.4
+JUMP_STRENGTH = 8
+WALL_SPEED = 2
 
-class Score:
-    def __init__(self):
-        pass
+# Переменные глобального состояния
+game_state = "waiting"  # Возможные значения: "waiting", "playing", "game_over"
+walls = []  # Список стен
+player = None  # Игрок
 
 
+# Класс игрока
 class Player:
-    def __init__(self, position, size):
-        self.pos = position
-        self.size = size
+    def __init__(self):
+        self.x = -100  # Начальная позиция игрока
+        self.y = 0  # Начальная вертикальная позиция
+        self.velocity = 0  # Скорость падения игрока
 
-    def update(self, t):
-        global c
-        a, b = 1, 10
-        y = -a * (t ** 2) + b * t + c
-        self.pos = self.pos[0], y
+    def update(self):
+        self.velocity += GRAVITY  # Применение силы гравитации
+        self.y += self.velocity
 
-    def draw(self, painting):
-        painting.up()
-        painting.goto(self.pos)
-        painting.down()
-        painting.dot(10)
+        # Если игрок падает ниже экрана
+        if self.y < -SCREEN_HEIGHT // 2:
+            self.y = -SCREEN_HEIGHT // 2
+            self.velocity = 0
 
     def jump(self):
-        global t, c
-        t = 0
-        c = self.pos[1]
+        self.velocity = JUMP_STRENGTH  # Прыжок вверх
+
+    def draw(self, turtle):
+        turtle.goto(self.x, self.y)
+        turtle.dot(20, "yellow")  # Отображение игрока в виде жёлтого круга
 
 
+# Класс стены
 class Wall:
-    def __init__(self, position):
-        self.pos = position
+    def __init__(self, x):
+        self.x = x
+        self.gap_y = random.randint(-SCREEN_HEIGHT // 4, SCREEN_HEIGHT // 4)  # Случайная позиция разрыва
 
-    def draw(self, painting):
-        xsize1 = xsize
-        ysize1 = ysize
-        painting.up()
-        painting.goto(self.pos)
-        p1 = self.pos[0] - xsize1, self.pos[1] - ysize1
-        p2 = self.pos[0] - xsize1, self.pos[1] + ysize1
-        p3 = self.pos[0] + xsize1, self.pos[1] - ysize1
-        p4 = self.pos[0] + xsize1, self.pos[1] + ysize1
-        painting.goto(p1[0], p1[1] - 200)
-        painting.down()
-        painting.goto(p1)
-        painting.goto(p3)
-        painting.goto(p3[0], p3[1] - 200)
-        painting.up()
-        painting.goto(p2[0], p2[1] + 200)
-        painting.down()
-        painting.goto(p2)
-        painting.goto(p4)
-        painting.goto(p4[0], p4[1] + 200)
-        painting.up()
+    def update(self):
+        self.x -= WALL_SPEED  # Движение стены влево
 
-    def update(self, t):
-        self.pos = self.pos[0] - t / 10, self.pos[1]
+    def draw(self, turtle):
+        # Верхняя часть стены
+        turtle.up()
+        turtle.goto(self.x - WALL_WIDTH // 2, self.gap_y + WALL_GAP // 2)
+        turtle.down()
+        turtle.begin_fill()
+        turtle.color("green")
+        turtle.goto(self.x + WALL_WIDTH // 2, self.gap_y + WALL_GAP // 2)
+        turtle.goto(self.x + WALL_WIDTH // 2, SCREEN_HEIGHT // 2)
+        turtle.goto(self.x - WALL_WIDTH // 2, SCREEN_HEIGHT // 2)
+        turtle.goto(self.x - WALL_WIDTH // 2, self.gap_y + WALL_GAP // 2)
+        turtle.end_fill()
 
-t, c = 0, 0
+        # Нижняя часть стены
+        turtle.up()
+        turtle.goto(self.x - WALL_WIDTH // 2, self.gap_y - WALL_GAP // 2)
+        turtle.down()
+        turtle.begin_fill()
+        turtle.color("green")
+        turtle.goto(self.x + WALL_WIDTH // 2, self.gap_y - WALL_GAP // 2)
+        turtle.goto(self.x + WALL_WIDTH // 2, -SCREEN_HEIGHT // 2)
+        turtle.goto(self.x - WALL_WIDTH // 2, -SCREEN_HEIGHT // 2)
+        turtle.goto(self.x - WALL_WIDTH // 2, self.gap_y - WALL_GAP // 2)
+        turtle.end_fill()
+
+    def collide_with(self, player):
+        if abs(self.x - player.x) < WALL_WIDTH:  # Проверка горизонтальной коллизии
+            if (player.y < self.gap_y - WALL_GAP // 2) or (player.y > self.gap_y + WALL_GAP // 2):
+                return True  # Игрок касается стены
+        return False
 
 
+# Начало игры
+def start_game():
+    global game_state, walls, player
+    game_state = "playing"  # Переводим игру в состояние "игра"
+    player.y = 0  # Сбрасываем позицию игрока
+    player.velocity = 0  # Сбрасываем скорость игрока
+    walls.clear()  # Убираем старые стены
 
-def game():
-    global t
-    run = True
-    screen = turtle.Screen()
-    drawing = turtle.Turtle()
-    drawing.pencolor("white")
-    screen.bgcolor("black")
-    screen.colormode(255)
-    screen.tracer(0)  # отключить отрисовку
-    drawing.speed(0)
-    drawing.hideturtle()
-    player = Player((0, 0), 100)
-    screen.listen()
-    #wall = Wall((100, 100))
-    wall_list = [Wall((i, random.randint(100, 200))) for i in range(0, 3000, 100)]
+    # Создаём стартовые стены
+    for i in range(3):
+        walls.append(Wall(SCREEN_WIDTH // 2 + i * 200))
+    game_loop()
 
-    while run:
-        t += 0.005
+
+# Игровой цикл
+def game_loop():
+    global game_state
+
+    if game_state == "playing":
+        # Обновление игровых объектов
+        player.update()
+
+        for wall in walls:
+            wall.update()
+
+        # Убираем отработанные стены и добавляем новые
+        if walls and walls[0].x < -SCREEN_WIDTH // 2:
+            walls.pop(0)
+            walls.append(Wall(SCREEN_WIDTH // 2))
+
+        # Проверка на коллизию
+        for wall in walls:
+            if wall.collide_with(player):
+                game_state = "game_over"
+
+        # Отрисовка обновленного состояния
         drawing.clear()
-        screen.onkey(player.jump, "Up")
-        for wall in wall_list:
-            wall.draw(drawing)
-            wall.update(t)
         player.draw(drawing)
-        player.update(t)
+        for wall in walls:
+            wall.draw(drawing)
+        screen.update()
+        screen.ontimer(game_loop, 20)  # Перезапуск игрового цикла через 20 мс
+
+    elif game_state == "game_over":
+        drawing.goto(0, 0)
+        drawing.color("white")
+        drawing.write("Game Over\nНажмите ПРОБЕЛ, чтобы начать заново", align="center", font=("Arial", 24, "normal"))
         screen.update()
 
+# Инициализация
+screen = turtle.Screen()
+screen.setup(SCREEN_WIDTH, SCREEN_HEIGHT)
+screen.bgcolor("black")
+screen.title("Flappy Bird")
+drawing = turtle.Turtle()
+drawing.hideturtle()
+drawing.speed(0)
+drawing.up()
 
-if __name__ == '__main__':
-    game()
+# Создаём игрока
+player = Player()
+
+# Привязка клавиатуры
+screen.listen()
+screen.onkey(lambda: start_game() if game_state in ["waiting", "game_over"] else player.jump(), "space")
+
+# Экран ожидания начала игры
+drawing.goto(0, 0)
+drawing.color("white")
+drawing.write("Нажмите ПРОБЕЛ, чтобы начать", align="center", font=("Arial", 24, "normal"))
+
+# Запускаем приложение
+screen.mainloop()
