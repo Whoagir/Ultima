@@ -25,6 +25,7 @@ screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Flappy Bird со спрайтами")
 clock = pygame.time.Clock()
 
+
 # Игрок (птица)
 class Bird(pygame.sprite.Sprite):
     def __init__(self):
@@ -37,7 +38,7 @@ class Bird(pygame.sprite.Sprite):
         self.rect.center = self.original_rect.center  # Сохраняем центр
 
         self.rect.center = (WIDTH // 4, HEIGHT // 2)
-        self.speed_y = 0   
+        self.speed_y = 0
 
     def jump(self):
         self.speed_y = JUMP_STRENGTH
@@ -56,6 +57,7 @@ class Bird(pygame.sprite.Sprite):
     def draw_debug(self, screen):
         if SHOW_DEBUG:
             pygame.draw.rect(screen, (255, 0, 0), self.rect, 2)  # Красный прямоугольник для отладки
+
 
 # Трубы
 class Pipe(pygame.sprite.Sprite):
@@ -80,6 +82,7 @@ class Pipe(pygame.sprite.Sprite):
         if SHOW_DEBUG:
             pygame.draw.rect(screen, (0, 255, 0), self.rect, 2)  # Зелёный прямоугольник для отладки
 
+
 # Счетчик
 class Score:
     def __init__(self):
@@ -92,6 +95,7 @@ class Score:
     def draw(self, screen):
         score_text = self.font.render(f"Score: {self.value // 2}", True, (0, 0, 0))
         screen.blit(score_text, (10, 10))
+
 
 # Основной цикл игры
 def game():
@@ -157,6 +161,7 @@ def game():
         pygame.display.flip()
 
     pygame.quit()
+
 
 # Запуск игры
 game()
