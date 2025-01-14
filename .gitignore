@@ -1,4 +1,6 @@
-
+*.png
+*.mp4
+*.mp3
 config.py
 .idea/
 res/images/
