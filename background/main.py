@@ -2,7 +2,7 @@ import pygame
 import sys
 
 
-def draw_gradient(screen, width, height, whiteness=0.5):
+def draw_gradient(surface, width, height, whiteness=0.5):
     for y in range(height):
         for x in range(width):
             # Вычисляем цвет пикселя на основе его позиции
@@ -20,7 +20,16 @@ def draw_gradient(screen, width, height, whiteness=0.5):
             g = min(255, g)
             b = min(255, b)
 
-            screen.set_at((x, y), (r, g, b))
+            surface.set_at((x, y), (r, g, b))
+
+
+def generate(output_path="gradient.png", width=1920, height=1080, whiteness=0.5):
+    """Создает PNG-картинку с градиентом."""
+    pygame.init()
+    surface = pygame.Surface((width, height))  # Создаем поверхность вместо экрана
+    draw_gradient(surface, width, height, whiteness)  # Рисуем градиент
+    pygame.image.save(surface, output_path)  # Сохраняем изображение
+    print(f"Градиент сохранен в {output_path}")
 
 
 def main():
@@ -45,4 +54,8 @@ def main():
 
 
 if __name__ == "__main__":
+    # Генерация изображения
+    generate(output_path="gradient_image.png", width=1920, height=1080, whiteness=0.3)
+
+    # Запуск приложения
     main()
